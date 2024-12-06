@@ -1,0 +1,64 @@
+---
+title: "class 11 alphafold"
+author: "Anqi Feng"
+format: pdf
+---
+Today, before delving into structural perdiction with AlphaFold, I will finish off our previous lab10 "comparative structural analysis"
+
+1. sequence identifier
+```{r}
+library(bio3d)
+id <-"1ake_A"
+aa<- get.seq(id)
+aa
+```
+```{r}
+b <- blast.pdb(aa)
+```
+```{r}
+attributes(b)
+```
+```{r}
+head(b$hit.tbl)
+```
+```{r}
+hits <- plot(b)
+```
+```{r}
+attributes(hits)
+```
+Top hits we like from our blast results would be 
+```{r}
+hits$pdb.id
+```
+```{r}
+#Download related pdb files
+files<- get.pdb(hits$pdb.id, path = "pdbs", aplit = TRUE, gzip=TRUE)
+```
+I have now found and downloaded all adk structures in the new database but viewing them is difficult as they need to be aligned and superposed (bioconductor software)
+
+I am going to install BiocManager package from CRAN, then I can use `BiocManager::install()`
+to install any bioconductor package
+```{r}
+#install.packages("BiocManager")
+```
+
+```{r}
+# Align releated PDBs
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+```
+```{r}
+pc<- pca(pdbs)
+plot(pc)
+```
+
+To examine in more detail what PC1 (or any PC) is capturing here we can plot the loadings or make a wee movie(trajectory) of moving along PC1
+```{r}
+plot(pc,pc.axes=c(1,2))
+```
+```{r}
+mktrj(pc,pc=1, file = "pc1.pdb")
+```
+
+
+

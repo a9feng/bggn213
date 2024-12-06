@@ -1,0 +1,81 @@
+---
+title: "class 6"
+author: "Anqi Feng"
+format: pdf
+---
+
+my first function
+
+```{r}
+add<-function(x,y=1){
+  x+y
+}
+```
+
+can i just use this?\
+
+```{r}
+add(10,10)
+add(10)
+```
+
+```{r}
+add(1,1)
+add(x=1,y=100)
+add(c(100,1,100),1)
+```
+
+```{r}
+add(10)
+```
+
+Q;make a function: "generate_DNA()" that makes a random nucleotide sequence of any length
+
+```{r}
+
+bases <- c("A", "C", "G", "T")
+sequence <- sample(bases, size=5, replace=TRUE)
+
+```
+
+That is my working lines, now i can make it into a function
+
+```{r}
+generate_dna<-function(length){
+  bases <- c("A", "C", "G", "T")
+sequence <- sample(bases, size=length, replace=TRUE)
+return(sequence)
+}
+```
+
+```{r}
+generate_dna(10)
+```
+
+```{r}
+bio3d::aa.table
+unique(bio3d::aa.table$aa1)[1:20]
+```
+
+```{r}
+generate_protein<-function(l){
+  aas<-unique(bio3d::aa.table$aa1)[1:20]
+  poly <- sample(aas, size=l, replace=TRUE)
+  poly<-paste(poly, collapse = "")
+  return(poly)
+}
+```
+
+```{r}
+generate_protein(10)
+```
+
+Generate protein sequences of length 6 to 12
+
+```{r}
+answer<-sapply(6:12, generate_protein)
+```
+
+```{r}
+cat(paste( ">id.", 6:12, "\n", answer,sep="", "\n"))
+```

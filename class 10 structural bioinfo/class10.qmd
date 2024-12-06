@@ -1,0 +1,136 @@
+---
+title: "class 10"
+author: "Anqi Feng"
+format: pdf
+---
+
+What is in the PDB database anyway?
+
+I grabbed summary data from: <https://www.rcsb.org/stats/summary>
+
+(on pdb website: **“Analyze” \> “PDB Statistics” \> “by Experimental Method and Molecular Type”)**
+
+```{r}
+pdb_file <- "Data Export Summary.csv"
+pdbstats = read.csv(pdb_file, row.names=1)
+pdbstats
+```
+
+-   **Q1:** What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+    ```         
+     0.8325592064     0.1023479646 
+    ```
+
+-   **Q2:** What proportion of structures in the PDB are protein?
+
+-   **Q3:** Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+    ```{r}
+    x <-pdbstats$Total
+    x
+    x<-gsub(',','',x)
+    #convert to numbers
+    as.numeric(x)
+
+    ```
+
+```{r}
+convert_comma_numbers<- function(x){
+  x<-gsub(',','',x)
+  x <-as.numeric(x)
+  return(x)
+}
+```
+
+```{r}
+n.tot<- sum(convert_comma_numbers(pdbstats$Total))
+n.tot
+```
+
+The `apply()` function is very useful as it can take any function and apply it over either the Rows or Cols of a data frame
+
+```{r}
+colSums(apply(pdbstats,2, convert_comma_numbers))/n.tot
+```
+
+```{r}
+#install.packages("readr")
+library(readr)
+read_csv("Data Export Summary.csv")
+```
+
+```{r}
+n.xray <- sum(convert_comma_numbers(pdbstats$X.ray))
+n.em<- sum(convert_comma_numbers(pdbstats$EM))
+```
+
+```{r}
+n.xray/n.tot*100
+n.em/n.tot*100
+```
+
+Q2. protein
+
+```{r}
+# Assuming the 'Molecular Type' column in your CSV has a row for "Protein"
+protein_count <- pdbstats$Count[pdbstats$Molecular.Type == "Protein"]
+protein_proportion <- protein_count / n.tot
+
+protein_proportion
+```
+
+## Using Mol\*
+
+![Default view of 1HSG](1HSG.png)
+
+Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure? Because H is very small so it's not shown here, but just Oxygen
+
+Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have? Yes(right above MK1 902 ) 308
+
+![Surface representation showing binding cleft](1HSG-spacefill.png)
+
+![Spacefill style showing the special water molecule HOH308](1HSG-special water.png)
+
+##Bio3D package for structural Bioinformatics
+```{r}
+library(bio3d)
+
+pdb<- read.pdb("1hsg")
+pdb
+```
+```{r}
+attributes(pdb)
+```
+```{r}
+head(pdb$atom)
+```
+```{r}
+##finding what the 25th AA is 
+##pdbseq(pdb) --> returns all the AAs
+pdbseq(pdb)[25] 
+```
+How many AAs are in this structure
+```{r}
+length(pdbseq(pdb))
+```
+##predicting functional motions of a single structure
+```{r}
+adk <- read.pdb("6s36")
+adk
+```
+```{r}
+source("https://tinyurl.com/viewpdb")
+library(r3dmol)
+##install shiny
+##view.pdb(pdb, backgroundColor="pink")
+```
+```{r}
+##view.pdb(adk)
+```
+```{r}
+adk<-read.pdb("6s36")
+modes <-nma(adk)
+mktrj(modes, pdb=adk, file="adk.pdb") ##and then go on to the molstar website to open the file
+```
+

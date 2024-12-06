@@ -1,0 +1,187 @@
+---
+title: "class 14"
+author: "Anqi Feng"
+format: pdf
+---
+##import data
+Counts
+Metadata
+-Data cleanup
+-setup for DESeup
+-DESeq
+-Inspect Results
+-Pathway analysis
+
+Import Data: we need two things "COunts" and "Meta Data" (what DESEeq calls colData as it )
+```{r}
+metaFile <- "GSE37704_metadata.csv"
+countFile <- "GSE37704_featurecounts.csv"
+counts <- read.csv(countFile, row.names =1 )
+metadata <- read.csv(metaFile)
+```
+
+```{r}
+head(counts)
+head(metadata)
+```
+We want the columns in our `counts` to match the `metadata`
+```{r}
+colnames(counts)
+```
+Something's off cuz theres seven colnames in count but six in metadata
+```{r}
+metadata$id
+```
+We can get rid of the first column in `counts` to make these match
+```{r}
+countData <- counts[,-1]
+head(countData)
+```
+```{r}
+colnames(countData) == metadata$id
+```
+Filter out zero counts
+It is standard practice
+```{r}
+to.keep.inds <- rowSums(countData) > 0
+cleanCounts <- countData[to.keep.inds, ]
+head(cleanCounts)
+```
+Setup fo DESEup
+```{r}
+#| message: false
+library(DESeq2)
+```
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = cleanCounts,
+                       colData = metadata,
+                       design = ~condition)
+```
+DESeq
+```{r}
+dds <- DESeq(dds)
+res <- results(dds)
+```
+
+```{r}
+head(res)
+```
+data visualization
+```{r}
+plot(res$log2FoldChange, -log(res$padj))
+```
+Pathway analysis
+
+Annotation of genes:
+First I need to translate my Ensemble IDs in my `res`object to Entrez and gene symbol formats
+
+For this I will use the annotationDbi package and it's `mapIds()` function
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+columns(org.Hs.eg.db)
+```
+```{r}
+res$genename <- mapIds(org.Hs.eg.db, 
+       keys=rownames(res),
+       keytype = "ENSEMBL",
+       column = "GENENAME")
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=rownames(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID")
+res$symbol = mapIds(org.Hs.eg.db,
+                    keys=rownames(res), 
+                    keytype="ENSEMBL",
+                    column="SYMBOL")
+
+head(res)
+```
+Before going any further lets focus on the a subset of top hits
+We can use a starting point log2FC of +2/-2 and a adjusted p=value of less than 0.05
+```{r}
+top.inds <- (abs(res$log2FoldChange) > 2) & (res$padj < 0.05)
+```
+
+let's save our "top genes" to a csv
+```{r}
+top.inds[is.na(top.inds)] <- FALSE
+```
+
+```{r}
+look.see <- is.na(top.inds)
+res[look.see,]
+```
+```{r}
+top.genes <- res[top.inds,]
+write.csv(top.genes, file = "top_geneset.csv")
+```
+
+```{r}
+library(gage)
+library(gageData)
+library(pathview)
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+```
+
+```{r}
+# Focus on signaling and metabolic pathways only
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs]
+
+# Examine the first 3 pathways
+head(kegg.sets.hs, 3)
+```
+The **gage** function wants a vector of importance as input with gene names as labels - KEGG speaks ENTREZ
+```{r}
+foldchanges <- res$log2FoldChange
+names(foldchanges) <- res$entrez
+head(foldchanges)
+```
+```{r}
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+```
+```{r}
+attributes(keggres)
+```
+```{r}
+head(keggres$less)
+```
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+```
+Gene Ontology(GO)
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gores<- gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+```
+
+```{r}
+head(gores)
+```
+```{r}
+head(gores$less)
+```
+Reactome Analysis
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+```
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+To run reactome on line, we need to make a little text file
+a gene id per line - "significant_genes.txt"
+
+Then, to perform pathway analysis online go to the Reactome website (https://reactome.org/PathwayBrowser/#TOOL=AT). Select “choose file” to upload your significant gene list. Then, select the parameters “Project to Humans”, then click “Analyze”.
+
+the bioconductor website has many other pathway packages too
+

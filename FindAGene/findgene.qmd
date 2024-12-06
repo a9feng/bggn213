@@ -1,0 +1,133 @@
+---
+title: "heatmap"
+author: "Anqi Feng"
+format: html
+---
+
+```{r}
+library(bio3d)
+
+inputfile <- "FIN muscle-I20241202-015927-0405-97156512-p1m.aln-fasta"
+
+aln <- read.fasta( inputfile )
+```
+
+```{r}
+aln
+```
+```{r}
+sim <- conserv(aln)
+```
+
+```{r}
+plot(sim, typ="h", xlab="Alignment position", ylab="Conservation score")
+```
+```{r}
+inds <- order(sim, decreasing=TRUE)
+head(sim[inds])
+```
+```{r}
+positions <- data.frame(pos=1:length(sim),
+                        aa=aln$ali[1,],
+                        score=sim)
+
+head(positions)
+```
+```{r}
+head( positions[inds,] )
+```
+```{r}
+aa123(positions[inds,]$aa)[1:3]
+```
+```{r}
+library(pheatmap)
+
+ide <- seqidentity(aln)
+pheatmap((1-ide))
+
+```
+```{r}
+png("sequence_identity_heatmap.png", width = 800, height = 800)  # Open PNG device
+pheatmap((1 - ide))  # Generate the heatmap
+
+```
+
+```{r}
+library(bio3d)
+library(seqinr)
+
+
+# Read the alignment file
+aln <- read.alignment("FIN muscle-I20241202-015927-0405-97156512-p1m.aln-fasta", format = "fasta")
+
+# View the alignment summary
+print(aln)
+```
+```{r}
+# Generate a consensus sequence
+consensus_seq <- consensus(aln)
+
+# Display the consensus sequence
+cat("Consensus sequence:\n", consensus_seq)
+
+```
+```{r}
+# Perform BLAST search
+blast_results <- blast.pdb(consensus_seq)  # Or use 'highest_identity_seq'
+
+# View BLAST hits
+head(blast_results$hits, 10)
+
+```
+```{r}
+library(bio3d)
+
+# Read alignment file
+aln <- read.fasta("FIN muscle-I20241202-015927-0405-97156512-p1m.aln-fasta")
+
+
+```
+```{r}
+str(aln)
+```
+```{r}
+# If aln is a list of sequences, convert it into a matrix
+# Ensure each sequence is represented by a single string of characters (rows as sequences)
+
+aln_matrix <- do.call(rbind, aln)
+
+# Check the first few rows to make sure the sequences look correct
+head(aln_matrix)
+
+```
+```{r}
+# Calculate the sequence identity matrix
+identity_matrix <- seqidentity(aln_matrix)
+
+# Print the identity matrix
+print(identity_matrix)
+
+```
+```{r}
+# Calculate the row-wise maximum identity (average identity of each sequence)
+average_identity <- rowMeans(identity_matrix)
+
+# Find the sequence with the highest average identity
+max_identity_index <- which.max(average_identity)
+
+# Print the sequence with the highest average identity
+selected_sequence <- aln_matrix[max_identity_index, ]
+cat("Selected sequence:", selected_sequence)
+
+```
+```{r}
+# Perform BLAST search
+blast_results <- blast.pdb(selected_sequence)  # Or use 'highest_identity_seq'
+
+# View BLAST hits
+head(blast_results$hits, 10)
+
+```
+
+```
+

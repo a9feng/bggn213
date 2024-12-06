@@ -1,0 +1,29 @@
+---
+title: "homework-class6"
+author: "Anqi Feng"
+format: pdf
+---
+
+
+
+```{r}
+# Can you improve this analysis code?
+
+
+library(bio3d)
+prostructure<-function(id){
+  s1<-read.pdb(id)
+  s1.chainA<-trim.pdb(s1, chain = "A", elety="CA")
+  s1.b<-s1.chainA$atom$b
+  plotb3(s1.b,sse=s1.chainA, typ="l", ylab="Bfactor")
+
+}
+
+
+prostructure("4AKE")
+prostructure("1AKE")
+prostructure("1E4Y")
+```
+
+
+

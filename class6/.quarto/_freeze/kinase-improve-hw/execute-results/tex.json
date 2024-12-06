@@ -1,0 +1,17 @@
+{
+  "hash": "86404b0dd60c635235c432f6c9f7562a",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"homework-class6\"\nauthor: \"Anqi Feng\"\nformat: pdf\n---\n\n::: {.cell}\n\n```{.r .cell-code}\n# Can you improve this analysis code?\n\n\nlibrary(bio3d)\nprostructure<-function(id){\n  s1<-read.pdb(id)\n  s1.chainA<-trim.pdb(s1, chain = \"A\", elety=\"CA\")\n  s1.b<-s1.chainA$atom$b\n  plotb3(s1.b,sse=s1.chainA, typ=\"l\", ylab=\"Bfactor\")\n\n}\n\n\nprostructure(\"4AKE\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n  Note: Accessing on-line PDB file\n```\n\n\n:::\n\n::: {.cell-output-display}\n![](kinase-improve-hw_files/figure-pdf/unnamed-chunk-1-1.pdf){fig-pos='H'}\n:::\n\n```{.r .cell-code}\nprostructure(\"1AKE\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n  Note: Accessing on-line PDB file\n   PDB has ALT records, taking A only, rm.alt=TRUE\n```\n\n\n:::\n\n::: {.cell-output-display}\n![](kinase-improve-hw_files/figure-pdf/unnamed-chunk-1-2.pdf){fig-pos='H'}\n:::\n\n```{.r .cell-code}\nprostructure(\"1E4Y\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n  Note: Accessing on-line PDB file\n```\n\n\n:::\n\n::: {.cell-output-display}\n![](kinase-improve-hw_files/figure-pdf/unnamed-chunk-1-3.pdf){fig-pos='H'}\n:::\n:::\n",
+    "supporting": [
+      "kinase-improve-hw_files/figure-pdf"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": null,
+    "postProcess": false
+  }
+}
